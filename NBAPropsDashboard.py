@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import plotly.express as px
 
 # Load data
 players_df = pd.read_csv('players.csv')
@@ -85,3 +86,50 @@ st.subheader("Team Defense Table")
 
 # Display the interactive table
 st.dataframe(teamdefense_df)
+
+# --- Radar Chart Section ---
+st.subheader("Team Defense Radar Chart")
+
+# Description for the radar chart
+st.write("The closer to the middle, the better the team's defense is in each category.")
+
+# User Input: Select a team for radar chart visualization
+team_for_radar = st.selectbox("Select a team to view their defensive rankings:", teamdefense_df['Team'].unique())
+
+# Filter the selected team
+team_data = teamdefense_df[teamdefense_df['Team'] == team_for_radar]
+
+if not team_data.empty:
+    # Extract relevant columns for radar chart
+    radar_metrics = [
+        'pg_points', 'pg_assists', 'pg_rebounds',
+        'sg_points', 'sg_assists', 'sg_rebounds',
+        'sf_points', 'sf_assists', 'sf_rebounds',
+        'pf_points', 'pf_assists', 'pf_rebounds',
+        'c_points', 'c_assists', 'c_rebounds'
+    ]
+    
+    # Extract the values for radar chart
+    radar_values = team_data[radar_metrics].iloc[0].values
+    
+    # Set labels for each axis in the radar chart
+    categories = [
+        'PG Points', 'PG Assists', 'PG Rebounds',
+        'SG Points', 'SG Assists', 'SG Rebounds',
+        'SF Points', 'SF Assists', 'SF Rebounds',
+        'PF Points', 'PF Assists', 'PF Rebounds',
+        'C Points', 'C Assists', 'C Rebounds'
+    ]
+    
+    # Create radar chart
+    fig = px.line_polar(
+        r=radar_values,
+        theta=categories,
+        line_close=True,
+        title=f"{team_for_radar} Defensive Ratings",
+        range_r=[1, 30],  # Rank range is from 1 to 30
+        template="plotly_dark"
+    )
+    
+    # Display radar chart
+    st.plotly_chart(fig)
